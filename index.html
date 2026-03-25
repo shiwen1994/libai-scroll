@@ -8,390 +8,434 @@
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#1a1410;font-family:'Noto Serif SC',serif;overflow-x:hidden;color:#3a2a1a;overscroll-behavior:none;touch-action:pan-y}
+html{scroll-behavior:smooth}
+body{background:#1a1410;font-family:'Noto Serif SC',serif;color:#3a2a1a}
 
-/* 预加载遮罩 */
-#preloader{position:fixed;inset:0;z-index:9999;background:#1a1410;display:flex;align-items:center;justify-content:center;transition:opacity 1.5s ease}
-#preloader.fade{opacity:0;pointer-events:none}
-#preloader-text{font-family:'Ma Shan Zheng',cursive;font-size:28px;color:#c8a860;letter-spacing:.15em;animation:pulse 1.8s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.8}}
+/* 封面 */
+#cover{
+  height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:linear-gradient(to bottom,#1a1410,#0f0c08);
+  cursor:pointer;user-select:none;
+}
+#cover-title{
+  font-family:'Ma Shan Zheng',cursive;
+  font-size:clamp(28px,6vw,52px);
+  color:#c8a860;text-align:center;letter-spacing:.1em;
+  text-shadow:0 0 40px rgba(200,168,96,.3);
+  line-height:1.6;
+}
+#cover-sub{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(12px,2vw,16px);
+  color:#7a6a5a;letter-spacing:.3em;margin-top:16px;
+}
+#cover-hint{
+  font-size:11px;color:rgba(200,168,96,.3);letter-spacing:.4em;
+  margin-top:48px;animation:hintPulse 2.5s ease-in-out infinite;
+}
+@keyframes hintPulse{0%,100%{opacity:.3}50%{opacity:.6}}
 
-/* 开卷封面 */
-#curtain{position:fixed;inset:0;z-index:1000;background:#1a1410;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:1;transition:opacity 1.8s ease;pointer-events:none}
-#curtain.hidden{opacity:0}
-#curtain-title{font-family:'Ma Shan Zheng',cursive;font-size:clamp(28px,6vw,56px);color:#c8a860;text-align:center;letter-spacing:.12em;text-shadow:0 0 40px rgba(200,168,96,.35);margin-bottom:12px}
-#curtain-sub{font-family:'Noto Serif SC',serif;font-size:clamp(11px,1.8vw,14px);color:#8a7a6a;text-align:center;letter-spacing:.25em}
-#curtain-poem{font-family:'Ma Shan Zheng',cursive;font-size:clamp(14px,2.5vw,20px);color:#9a8a6a;text-align:center;letter-spacing:.08em;margin-top:12px}
-
-/* 横向滚动 */
-#scroll{display:flex;width:1000vw;height:100vh;transition:transform .85s cubic-bezier(.4,0,.2,1)}
+/* 页面主体 */
+#main{display:none}
+#main.show{display:block}
 
 /* 每段 */
-.s{width:100vw;height:100vh;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.48)saturate(.85);transition:filter .8s ease}
-.s.active .bg{filter:brightness(.65)saturate(1.05)}
-
-.paper{position:absolute;inset:0;pointer-events:none;z-index:1;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
-
-.grad-t{position:absolute;top:0;left:0;right:0;height:22%;background:linear-gradient(to bottom,rgba(26,20,16,.75),transparent);z-index:2;pointer-events:none}
-.grad-b{position:absolute;bottom:0;left:0;right:0;height:48%;background:linear-gradient(to top,rgba(26,20,16,.97),rgba(26,20,16,.35),transparent);z-index:2;pointer-events:none}
+.chapter{
+  min-height:100vh;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.chapter-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  filter:brightness(.4)saturate(.8);
+}
+.chapter-paper{
+  position:absolute;inset:0;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+}
+.chapter-grad-t{
+  position:absolute;top:0;left:0;right:0;height:18%;
+  background:linear-gradient(to bottom,rgba(26,20,16,.7),transparent);
+  pointer-events:none;
+}
+.chapter-grad-b{
+  position:absolute;bottom:0;left:0;right:0;height:50%;
+  background:linear-gradient(to top,rgba(26,20,16,.97),transparent);
+  pointer-events:none;
+}
 
 /* 内容 */
-.c{position:relative;z-index:10;text-align:center;padding:0 7vw;max-width:680px;max-height:100vh;overflow-y:auto}
-.c::-webkit-scrollbar{width:2px}
-.c::-webkit-scrollbar-thumb{background:rgba(200,168,96,.25)}
+.chapter-inner{
+  position:relative;z-index:10;text-align:center;
+  padding:12vh 8vw 15vh;max-width:700px;width:100%;
+}
+.chapter-num{
+  font-size:clamp(10px,1.3vw,12px);color:rgba(200,168,96,.35);
+  letter-spacing:.6em;margin-bottom:12px;
+}
+.chapter-title{
+  font-family:'Ma Shan Zheng',cursive;
+  font-size:clamp(26px,5.5vw,50px);
+  color:#e8d8a0;text-shadow:0 2px 18px rgba(200,168,96,.2);
+  letter-spacing:.1em;line-height:1.4;margin-bottom:24px;
+}
+.chapter-lines{text-align:left}
+.chapter-line{
+  font-size:clamp(14px,2.2vw,19px);
+  color:rgba(230,220,190,.82);
+  line-height:2.7;letter-spacing:.05em;font-weight:300;
+  padding:5px 0;opacity:0;transform:translateY(16px);
+  transition:opacity .8s ease,transform .8s ease;
+  border-bottom:1px solid rgba(200,168,96,.06);
+  padding-left:12px;
+}
+.chapter-line.show{opacity:1;transform:translateY(0)}
+.chapter-line .sep{
+  display:inline-block;width:1px;height:.9em;
+  background:rgba(200,168,96,.15);vertical-align:middle;margin:0 6px;
+}
 
-.num{font-size:clamp(10px,1.3vw,11px);color:rgba(200,168,96,.38);letter-spacing:.5em;margin-bottom:10px}
-
-.title{font-family:'Ma Shan Zheng',cursive;font-size:clamp(22px,5vw,46px);color:#e8d8a0;text-shadow:0 2px 16px rgba(200,168,96,.2);letter-spacing:.1em;line-height:1.35;margin-bottom:16px}
-
-.text{font-size:clamp(13px,2vw,17px);color:rgba(230,220,190,.8);line-height:2.6;letter-spacing:.05em;font-weight:300;opacity:0;transform:translateY(10px);transition:opacity .9s .3s,transform .9s .3s}
-.s.active .text{opacity:1;transform:translateY(0)}
-
-.line{display:block;margin:4px 0}
-
-.d{display:inline-block;width:1px;height:.9em;background:rgba(200,168,96,.18);vertical-align:middle;margin:0 5px}
-
-.seal{display:inline-block;margin-top:18px;width:38px;height:38px;border:2px solid rgba(180,60,40,.6);border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:14px;color:rgba(180,60,40,.7);transform:rotate(-4deg);opacity:0;transition:opacity .6s 1.1s}
-.s.active .seal{opacity:1}
+.chapter-seal{
+  display:inline-block;margin-top:24px;
+  width:38px;height:38px;border:2px solid rgba(180,60,40,.6);
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-family:'Ma Shan Zheng',cursive;font-size:14px;color:rgba(180,60,40,.65);
+  transform:rotate(-4deg);opacity:0;transition:opacity .5s 1.2s;
+}
+.chapter-seal.show{opacity:1}
 
 /* 剑光 */
-.sword-light{position:absolute;inset:0;background:linear-gradient(108deg,transparent 32%,rgba(200,220,255,.02) 50%,transparent 68%);pointer-events:none;z-index:3}
-.sword-flash{position:absolute;left:-20%;right:-20%;height:1px;background:linear-gradient(to right,transparent,rgba(200,220,255,.1),transparent);animation:swordMove 5s ease-in-out infinite;z-index:3;pointer-events:none}
+.sword-light{position:absolute;inset:0;background:linear-gradient(108deg,transparent 30%,rgba(200,220,255,.015) 50%,transparent 70%);pointer-events:none}
+.sword-flash{position:absolute;left:-20%;right:-20%;height:1px;background:linear-gradient(to right,transparent,rgba(200,220,255,.08),transparent);animation:swordMove 5s ease-in-out infinite;pointer-events:none;z-index:3}
 @keyframes swordMove{0%{top:18%;opacity:0}12%{opacity:1}88%{opacity:1}100%{top:78%;opacity:0}}
 
 /* 导航 */
-#nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100;background:rgba(26,20,16,.7);padding:7px 14px;border-radius:22px;backdrop-filter:blur(10px)}
+#nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:200;background:rgba(26,20,16,.75);padding:7px 14px;border-radius:22px;backdrop-filter:blur(10px);opacity:0;transition:opacity .5s}
+#nav.show{opacity:1}
 .dot{width:6px;height:6px;border-radius:50%;background:rgba(200,168,96,.2);cursor:pointer;border:none;transition:all .3s ease}
 .dot:hover{background:rgba(200,168,96,.45)}
 .dot.active{background:#c8a860;box-shadow:0 0 6px rgba(200,168,96,.5);transform:scale(1.4)}
 
-#bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,#8a6020,#c8a860);width:0;transition:width .4s ease;z-index:200;box-shadow:0 0 8px rgba(200,168,96,.35)}
-
-#hint{position:fixed;bottom:65px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(200,168,96,.32);letter-spacing:.3em;z-index:100;animation:hintPulse 2.5s ease-in-out infinite;pointer-events:none;transition:opacity .5s}
-#hint.hidden{opacity:0}
-@keyframes hintPulse{0%,100%{opacity:.32;transform:translateX(-50%) translateX(-3px)}50%{opacity:.65;transform:translateX(-50%) translateX(3px)}}
-
-@media(max-width:600px){.c{padding:0 6vw}#nav{bottom:16px}}
+@media(max-width:600px){.chapter-inner{padding:10vh 6vw 12vh}}
 </style>
 </head>
 <body>
 
-<!-- 预加载 -->
-<div id="preloader"><div id="preloader-text">画卷加载中</div></div>
-
-<div id="bar"></div>
-
-<!-- 开卷封面 -->
-<div id="curtain">
-  <div id="curtain-title">经乱离后天恩流夜郎<br>忆旧游书怀赠江夏韦太守良宰</div>
-  <div id="curtain-sub">李白</div>
-  <div id="curtain-poem">天上白玉京，十二楼五城</div>
+<!-- 封面 -->
+<div id="cover" onclick="startScroll()">
+  <div id="cover-title">经乱离后天恩流夜郎<br>忆旧游书怀赠江夏韦太守良宰</div>
+  <div id="cover-sub">李白</div>
+  <div id="cover-hint">↑ 向上滚动阅读 ↓</div>
 </div>
 
-<div id="scroll">
+<!-- 主内容 -->
+<div id="main">
 
   <!-- 壹 -->
-  <section class="s" data-i="0">
-    <div class="bg" style="background-image:url('bg1.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">壹</div>
-      <div class="title">天上白玉京</div>
-      <div class="text">
-        <span class="line">天上白玉京，十二楼五城。</span>
-        <span class="line">仙人抚我顶，结发受长生。</span>
-        <span class="line">误逐世间乐，颇穷理乱情。</span>
-        <span class="line">十六君远行，瞿塘滟滪堆。</span>
-        <span class="line">五月不可触，猿声天上哀。</span>
-        <span class="line">门前迟行迹，一一生绿苔。</span>
+  <section class="chapter" data-idx="0" data-bg="bg1.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">壹</div>
+      <div class="chapter-title">天上白玉京</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">天上白玉京，十二楼五城。</div>
+        <div class="chapter-line">仙人抚我顶，结发受长生。</div>
+        <div class="chapter-line">误逐世间乐，颇穷理乱情。</div>
+        <div class="chapter-line">十六君远行，瞿塘滟滪堆。</div>
+        <div class="chapter-line">五月不可触，猿声天上哀。</div>
+        <div class="chapter-line">门前迟行迹，一一生绿苔。</div>
       </div>
-      <div class="seal">白</div>
+      <div class="chapter-seal">白</div>
     </div>
   </section>
 
   <!-- 贰 -->
-  <section class="s" data-i="1">
-    <div class="bg" style="background-image:url('bg2.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">贰</div>
-      <div class="title">入仕翰林</div>
-      <div class="text">
-        <span class="line">尔后逢运会，龙颜拱明光。</span>
-        <span class="line">手持芙蓉篇，三十侍君王。</span>
-        <span class="line">斗鸡金宫里，蹴踘瑶池边。</span>
-        <span class="line">吹箫饮酒乐，赊写上青天。</span>
-        <span class="line">何知鸾凤志，不与俗争先。</span>
-        <span class="line">宁知风雨夜，促膝复绸缪。</span>
+  <section class="chapter" data-idx="1" data-bg="bg2.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">贰</div>
+      <div class="chapter-title">入仕翰林</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">尔后逢运会，龙颜拱明光。</div>
+        <div class="chapter-line">手持芙蓉篇，三十侍君王。</div>
+        <div class="chapter-line">斗鸡金宫里，蹴踘瑶池边。</div>
+        <div class="chapter-line">吹箫饮酒乐，赊写上青天。</div>
+        <div class="chapter-line">何知鸾凤志，不与俗争先。</div>
+        <div class="chapter-line">宁知风雨夜，促膝复绸缪。</div>
       </div>
-      <div class="seal">翰</div>
+      <div class="chapter-seal">翰</div>
     </div>
   </section>
 
   <!-- 叁 -->
-  <section class="s" data-i="2">
-    <div class="bg" style="background-image:url('bg2.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">叁</div>
-      <div class="title">权臣倾轧</div>
-      <div class="text">
-        <span class="line">鸡栖凤皇食，骐骥盐车弃。</span>
-        <span class="line">青云当自致，何必求知音。</span>
-        <span class="line">淮南鸡犬吠，碧梧凤凰栖。</span>
-        <span class="line">但愿君恩顾妾深，岂惜黄金买词赋。</span>
-        <span class="line">白圭竟何在，终无一能贤。</span>
-        <span class="line">浮云蔽高堂，流水空潆洄。</span>
+  <section class="chapter" data-idx="2" data-bg="bg2.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">叁</div>
+      <div class="chapter-title">权臣倾轧</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">鸡栖凤皇食，骐骥盐车弃。</div>
+        <div class="chapter-line">青云当自致，何必求知音。</div>
+        <div class="chapter-line">淮南鸡犬吠，碧梧凤凰栖。</div>
+        <div class="chapter-line">但愿君恩顾妾深，岂惜黄金买词赋。</div>
+        <div class="chapter-line">白圭竟何在，终无一能贤。</div>
+        <div class="chapter-line">浮云蔽高堂，流水空潆洄。</div>
       </div>
-      <div class="seal">谗</div>
+      <div class="chapter-seal">谗</div>
     </div>
   </section>
 
   <!-- 肆 -->
-  <section class="s" data-i="3">
-    <div class="bg" style="background-image:url('bg3.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">肆</div>
-      <div class="title">安史乱离</div>
-      <div class="text">
-        <span class="line">洛阳三月，胡沙乱飞扬。</span>
-        <span class="line">函谷如玉碎，连山杂烽烟。</span>
-        <span class="line">白骨成丘山，孤于一剑亡。</span>
-        <span class="line">大军载粮草，万室空板筑。</span>
-        <span class="line">我窜求夜郎，逐客自伤悲。</span>
-        <span class="line">万事皆如此，吾行亦何伤。</span>
+  <section class="chapter" data-idx="3" data-bg="bg3.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">肆</div>
+      <div class="chapter-title">安史乱离</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">洛阳三月，胡沙乱飞扬。</div>
+        <div class="chapter-line">函谷如玉碎，连山杂烽烟。</div>
+        <div class="chapter-line">白骨成丘山，孤于一剑亡。</div>
+        <div class="chapter-line">大军载粮草，万室空板筑。</div>
+        <div class="chapter-line">我窜求夜郎，逐客自伤悲。</div>
+        <div class="chapter-line">万事皆如此，吾行亦何伤。</div>
       </div>
-      <div class="seal">乱</div>
+      <div class="chapter-seal">乱</div>
     </div>
   </section>
 
   <!-- 伍 -->
-  <section class="s" data-i="4">
-    <div class="bg" style="background-image:url('bg4.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">伍</div>
-      <div class="title">流放夜郎</div>
-      <div class="text">
-        <span class="line">夜郎万里道，沧溟一片流。</span>
-        <span class="line">黄鹤东俱下，一鸟凌高秋。</span>
-        <span class="line">魂梦何时到，穷山阻且修。</span>
-        <span class="line">长流夜郎客，独酌长江舟。</span>
-        <span class="line">众鸟各有托，吾亦爱吾庐。</span>
-        <span class="line">故乡不可见，搔首空悠悠。</span>
+  <section class="chapter" data-idx="4" data-bg="bg4.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">伍</div>
+      <div class="chapter-title">流放夜郎</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">夜郎万里道，沧溟一片流。</div>
+        <div class="chapter-line">黄鹤东俱下，一鸟凌高秋。</div>
+        <div class="chapter-line">魂梦何时到，穷山阻且修。</div>
+        <div class="chapter-line">长流夜郎客，独酌长江舟。</div>
+        <div class="chapter-line">众鸟各有托，吾亦爱吾庐。</div>
+        <div class="chapter-line">故乡不可见，搔首空悠悠。</div>
       </div>
-      <div class="seal">郎</div>
+      <div class="chapter-seal">郎</div>
     </div>
   </section>
 
   <!-- 陆 -->
-  <section class="s" data-i="5">
-    <div class="bg" style="background-image:url('bg4.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">陆</div>
-      <div class="title">三峡险滩</div>
-      <div class="text">
-        <span class="line">三峡巫峡长，瞿塘艳滪堆。</span>
-        <span class="line">两岸猿声啼不住，轻舟已过万重山。</span>
-        <span class="line">朝辞白帝彩云间，千里江陵一日还。</span>
-        <span class="line">水流如激箭，滩峻不容舟。</span>
-        <span class="line">水流回望连天黑，唯见长江日夜流。</span>
-        <span class="line">何如此峡水，万折故南流。</span>
+  <section class="chapter" data-idx="5" data-bg="bg4.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">陆</div>
+      <div class="chapter-title">三峡险滩</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">三峡巫峡长，瞿塘艳滪堆。</div>
+        <div class="chapter-line">两岸猿声啼不住，轻舟已过万重山。</div>
+        <div class="chapter-line">朝辞白帝彩云间，千里江陵一日还。</div>
+        <div class="chapter-line">水流如激箭，滩峻不容舟。</div>
+        <div class="chapter-line">水流回望连天黑，唯见长江日夜流。</div>
+        <div class="chapter-line">何如此峡水，万折故南流。</div>
       </div>
-      <div class="seal">峡</div>
+      <div class="chapter-seal">峡</div>
     </div>
   </section>
 
   <!-- 柒 -->
-  <section class="s" data-i="6">
-    <div class="bg" style="background-image:url('bg5.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">柒</div>
-      <div class="title">遇赦东归</div>
-      <div class="text">
-        <span class="line">夜郎天外怨流离，一贬犹为万里行。</span>
-        <span class="line">得罪风霜苦，全生羽翼轻。</span>
-        <span class="line">尚未及青天，低头觑尔曹。</span>
-        <span class="line">却起江湖兴，波涛日夜生。</span>
-        <span class="line">归及强健时，送客渡江陵。</span>
-        <span class="line">春风来几日，白发忽满簪。</span>
+  <section class="chapter" data-idx="6" data-bg="bg5.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">柒</div>
+      <div class="chapter-title">遇赦东归</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">夜郎天外怨流离，一贬犹为万里行。</div>
+        <div class="chapter-line">得罪风霜苦，全生羽翼轻。</div>
+        <div class="chapter-line">尚未及青天，低头觑尔曹。</div>
+        <div class="chapter-line">却起江湖兴，波涛日夜生。</div>
+        <div class="chapter-line">归及强健时，送客渡江陵。</div>
+        <div class="chapter-line">春风来几日，白发忽满簪。</div>
       </div>
-      <div class="seal">赦</div>
+      <div class="chapter-seal">赦</div>
     </div>
   </section>
 
   <!-- 捌 -->
-  <section class="s" data-i="7">
-    <div class="bg" style="background-image:url('bg7.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">捌</div>
-      <div class="title">江夏重逢</div>
-      <div class="text">
-        <span class="line">借问叹者谁，言是之子修。</span>
-        <span class="line">故人不相见，况经十载愁。</span>
-        <span class="line">宁知风雨夜，促膝复绸缪。</span>
-        <span class="line">一杯相与醉，可以解千忧。</span>
-        <span class="line">依然故人情，执手重夷犹。</span>
-        <span class="line">留欢卜夜永，明月照高楼。</span>
+  <section class="chapter" data-idx="7" data-bg="bg7.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">捌</div>
+      <div class="chapter-title">江夏重逢</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">借问叹者谁，言是之子修。</div>
+        <div class="chapter-line">故人不相见，况经十载愁。</div>
+        <div class="chapter-line">宁知风雨夜，促膝复绸缪。</div>
+        <div class="chapter-line">一杯相与醉，可以解千忧。</div>
+        <div class="chapter-line">依然故人情，执手重夷犹。</div>
+        <div class="chapter-line">留欢卜夜永，明月照高楼。</div>
       </div>
-      <div class="seal">逢</div>
+      <div class="chapter-seal">逢</div>
     </div>
   </section>
 
   <!-- 玖 -->
-  <section class="s" data-i="8">
-    <div class="bg" style="background-image:url('bg6.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="sword-light"></div><div class="sword-flash"></div>
-    <div class="c">
-      <div class="num">玖</div>
-      <div class="title">剑非万人敌</div>
-      <div class="text">
-        <span class="line">剑非万人敌，文窃四海声。</span>
-        <span class="line">离家百年乐，此言虽不平。</span>
-        <span class="line">书此赠今日，青云路分明。</span>
-        <span class="line">壮心竟不就，白发忽满簪。</span>
-        <span class="line">松柏虽孤处，蒲荷亦自荣。</span>
-        <span class="line">古来英雄士，咸同一呜呃。</span>
+  <section class="chapter" data-idx="8" data-bg="bg6.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="sword-light"></div>
+    <div class="sword-flash"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">玖</div>
+      <div class="chapter-title">剑非万人敌</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">剑非万人敌，文窃四海声。</div>
+        <div class="chapter-line">离家百年乐，此言虽不平。</div>
+        <div class="chapter-line">书此赠今日，青云路分明。</div>
+        <div class="chapter-line">壮心竟不就，白发忽满簪。</div>
+        <div class="chapter-line">松柏虽孤处，蒲荷亦自荣。</div>
+        <div class="chapter-line">古来英雄士，咸同一呜呃。</div>
       </div>
-      <div class="seal">剑</div>
+      <div class="chapter-seal">剑</div>
     </div>
   </section>
 
   <!-- 拾 -->
-  <section class="s" data-i="9">
-    <div class="bg" style="background-image:url('bg1.jpg')"></div>
-    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
-    <div class="c">
-      <div class="num">拾</div>
-      <div class="title">仙人抚我顶</div>
-      <div class="text">
-        <span class="line">天上白玉京，十二楼五城。</span>
-        <span class="line">仙人抚我顶，结发受长生。</span>
-        <span class="line">误逐世间乐，颇穷理乱情。</span>
-        <span class="line">九十六圣君，浮云挂空名。</span>
-        <span class="line">长揖四十年，此行天府惊。</span>
-        <span class="line">愿一明白水，携手相与倾。</span>
-     优</div>
-      <div class="seal">白</div>
+  <section class="chapter" data-idx="9" data-bg="bg1.jpg">
+    <div class="chapter-bg"></div>
+    <div class="chapter-paper"></div>
+    <div class="chapter-grad-t"></div>
+    <div class="chapter-grad-b"></div>
+    <div class="chapter-inner">
+      <div class="chapter-num">拾</div>
+      <div class="chapter-title">仙人抚我顶</div>
+      <div class="chapter-lines">
+        <div class="chapter-line">天上白玉京，十二楼五城。</div>
+        <div class="chapter-line">仙人抚我顶，结发受长生。</div>
+        <div class="chapter-line">误逐世间乐，颇穷理乱情。</div>
+        <div class="chapter-line">九十六圣君，浮云挂空名。</div>
+        <div class="chapter-line">长揖四十年，此行天府惊。</div>
+        <div class="chapter-line">愿一明白水，携手相与倾。</div>
+      </div>
+      <div class="chapter-seal">白</div>
     </div>
   </section>
 
 </div>
 
-<div id="nav">
-  <button class="dot active" data-i="0"></button>
-  <button class="dot" data-i="1"></button>
-  <button class="dot" data-i="2"></button>
-  <button class="dot" data-i="3"></button>
-  <button class="dot" data-i="4"></button>
-  <button class="dot" data-i="5"></button>
-  <button class="dot" data-i="6"></button>
-  <button class="dot" data-i="7"></button>
-  <button class="dot" data-i="8"></button>
-  <button class="dot" data-i="9"></button>
-</div>
-
-<div id="hint">← 左右滑动 →</div>
+<!-- 导航 -->
+<nav id="nav">
+  <button class="dot active" data-idx="0"></button>
+  <button class="dot" data-idx="1"></button>
+  <button class="dot" data-idx="2"></button>
+  <button class="dot" data-idx="3"></button>
+  <button class="dot" data-idx="4"></button>
+  <button class="dot" data-idx="5"></button>
+  <button class="dot" data-idx="6"></button>
+  <button class="dot" data-idx="7"></button>
+  <button class="dot" data-idx="8"></button>
+  <button class="dot" data-idx="9"></button>
+</nav>
 
 <script>
-// 预加载所有背景图，等加载完再显示
-(function(){
-  var bgs=['bg1.jpg','bg2.jpg','bg3.jpg','bg4.jpg','bg5.jpg','bg6.jpg','bg7.jpg','bg8.jpg','bg9.jpg','bg10.jpg'];
-  var loaded=0;
-  function hidePreloader(){
-    var p=document.getElementById('preloader');
-    if(p){p.classList.add('fade');setTimeout(function(){p.style.display='none';},1500);}
-    // 开卷
-    var c=document.getElementById('curtain');
-    setTimeout(function(){
-      c.classList.add('hidden');
-      setTimeout(function(){
-        c.style.display='none';
-        var h=document.getElementById('hint');
-        h.classList.remove('hidden');
-        setTimeout(function(){h.classList.add('hidden');},4500);
-      },1800);
-    },500);
-  }
-  bgs.forEach(function(src){
-    var img=new Image();
-    img.onload=function(){loaded++;if(loaded>=bgs.length)hidePreloader();};
-    img.onerror=function(){loaded++;if(loaded>=bgs.length)hidePreloader();};
-    img.src=src;
+// 封面点击 → 进入主内容
+function startScroll(){
+  var cover=document.getElementById('cover');
+  cover.style.opacity='0';
+  setTimeout(function(){
+    cover.style.display='none';
+    document.getElementById('main').classList.add('show');
+    document.getElementById('nav').classList.add('show');
+  },800);
+  // 预加载所有背景图
+  var bgs=document.querySelectorAll('.chapter-bg');
+  bgs.forEach(function(div,i){
+    var src=div.parentElement.getAttribute('data-bg');
+    div.style.backgroundImage="url('"+src+"')";
   });
-  // 最多等8秒也开卷
-  setTimeout(hidePreloader,8000);
-})();
+  // 触发第一章的动画
+  setTimeout(function(){checkVisible();},200);
+}
 
-// 主交互
-(function(){
-  var TOTAL=10;
-  var cur=0;
-  var lock=0;
-  var sc=document.getElementById('scroll');
-  var ss=document.querySelectorAll('.s');
-  var ds=document.querySelectorAll('.dot');
-  var bar=document.getElementById('bar');
-  ss[0].classList.add('active');
+// IntersectionObserver：检测每个章节
+var dots=document.querySelectorAll('.dot');
+var chapters=document.querySelectorAll('.chapter');
 
-  function go(i){
-    if(i<0||i>=TOTAL||lock)return;
-    lock=1;cur=i;
-    sc.style.transform='translateX(-'+(i*100)+'vw)';
-    for(var j=0;j<ss.length;j++){
-      ss[j].classList.toggle('active',j===i);
+function checkVisible(){
+  chapters.forEach(function(ch,i){
+    var rect=ch.getBoundingClientRect();
+    var inView=rect.top<window.innerHeight*.6&&rect.bottom>0;
+    if(inView){
+      // 触发诗句逐句显现
+      var lines=ch.querySelectorAll('.chapter-line');
+      lines.forEach(function(line,li){
+        setTimeout(function(){
+          line.classList.add('show');
+        },li*120);
+      });
+      var seal=ch.querySelector('.chapter-seal');
+      if(seal)seal.classList.add('show');
+      // 更新导航
+      dots.forEach(function(d){d.classList.remove('active');});
+      dots[i].classList.add('active');
+    } else {
+      // 离开时重置（可选）
+      // var lines=ch.querySelectorAll('.chapter-line');
+      // lines.forEach(function(l){l.classList.remove('show');});
     }
-    for(var k=0;k<ds.length;k++){
-      ds[k].classList.toggle('active',k===i);
-    }
-    bar.style.width=((i+1)/TOTAL*100)+'%';
-    setTimeout(function(){lock=0;},900);
-  }
-
-  // 滚轮
-  var wt;
-  window.addEventListener('wheel',function(e){
-    e.preventDefault();
-    clearTimeout(wt);
-    wt=setTimeout(function(){go(e.deltaY>0?cur+1:cur-1);},100);
-  },{passive:false});
-
-  // 触摸
-  var sx=0,sy=0,lk=0;
-  document.addEventListener('touchstart',function(e){
-    sx=e.touches[0].clientX;
-    sy=e.touches[0].clientY;
-  },{passive:true});
-  document.addEventListener('touchend',function(e){
-    if(lk)return;
-    var dx=e.changedTouches[0].clientX-sx;
-    var dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
-      lk=1;
-      go(dx<0?cur+1:cur-1);
-      setTimeout(function(){lk=0;},950);
-    }
-  },{passive:true});
-
-  // 导航
-  for(var m=0;m<ds.length;m++){
-    (function(idx){
-      ds[idx].addEventListener('click',function(){go(idx);});
-    })(m);
-  }
-
-  // 键盘
-  document.addEventListener('keydown',function(e){
-    if(e.key==='ArrowRight'||e.key==='ArrowDown')go(cur+1);
-    if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
   });
-})();
+}
+
+var observer=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      var ch=e.target;
+      var idx=parseInt(ch.getAttribute('data-idx'));
+      dots.forEach(function(d){d.classList.remove('active');});
+      dots[idx].classList.add('active');
+      // 逐句出现
+      var lines=ch.querySelectorAll('.chapter-line');
+      lines.forEach(function(line,li){
+        setTimeout(function(){line.classList.add('show');},li*130);
+      });
+      var seal=ch.querySelector('.chapter-seal');
+      if(seal)setTimeout(function(){seal.classList.add('show');},lines.length*130+200);
+    }
+  });
+},{threshold:0.3,rootMargin:'0px 0px -10% 0px'});
+
+chapters.forEach(function(ch){observer.observe(ch);});
+
+// 导航点击 → 平滑滚动到章节
+dots.forEach(function(d,i){
+  d.addEventListener('click',function(){
+    chapters[i].scrollIntoView({behavior:'smooth'});
+  });
+});
 </script>
 </body>
 </html>
