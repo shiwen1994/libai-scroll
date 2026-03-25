@@ -7,496 +7,314 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1410;font-family:'Noto Serif SC',serif;overflow-x:hidden;color:#3a2a1a;overscroll-behavior:none;touch-action:pan-y}
 
-  body {
-    background: #1a1410;
-    font-family: 'Noto Serif SC', serif;
-    overflow-x: hidden;
-    color: #3a2a1a;
-    overscroll-behavior: none;
-    touch-action: pan-y;
-  }
+/* 开卷封面 */
+#curtain{position:fixed;inset:0;z-index:1000;background:#1a1410;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity 1.5s ease}
+#curtain.fade{opacity:0;pointer-events:none}
+#curtain-title{font-family:'Ma Shan Zheng',cursive;font-size:clamp(32px,7vw,64px);color:#c8a860;text-align:center;letter-spacing:.15em;text-shadow:0 0 40px rgba(200,168,96,.4);animation:fadeUp 1.5s ease forwards}
+#curtain-sub{font-family:'Noto Serif SC',serif;font-size:clamp(11px,2vw,15px);color:#8a7a6a;text-align:center;margin-top:14px;letter-spacing:.25em;opacity:0;animation:fadeUp 1s .8s ease forwards}
+#curtain-poem{font-family:'Ma Shan Zheng',cursive;font-size:clamp(16px,3vw,22px);color:#9a8a6a;text-align:center;margin-top:16px;letter-spacing:.1em;opacity:0;animation:fadeUp 1s 1.2s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}from{opacity:0;transform:translateY(14px)}}
 
-  /* ===== 开卷动画 ===== */
-  #curtain {
-    position: fixed; inset: 0; z-index: 1000;
-    background: #1a1410;
-    display: flex; align-items: center; justify-content: center;
-    transition: opacity 1.2s ease;
-  }
-  #curtain.fade { opacity: 0; pointer-events: none; }
-  #curtain-title {
-    font-family: 'Ma Shan Zheng', cursive;
-    font-size: clamp(36px, 8vw, 72px);
-    color: #c8a860;
-    text-align: center;
-    letter-spacing: 0.15em;
-    text-shadow: 0 0 40px rgba(200,168,96,0.4);
-    animation: fadeIn 1.5s ease forwards;
-  }
-  #curtain-sub {
-    font-family: 'Noto Serif SC', serif;
-    font-size: clamp(12px, 2.5vw, 18px);
-    color: #8a7a6a;
-    text-align: center;
-    margin-top: 12px;
-    letter-spacing: 0.3em;
-    opacity: 0; animation: fadeIn 1s 0.8s ease forwards;
-  }
-  @keyframes fadeIn { to { opacity: 1; } }
+/* 横向滚动 */
+#scroll{display:flex;width:1000vw;height:100vh;transition:transform .9s cubic-bezier(.4,0,.2,1)}
 
-  /* ===== 横向滚动容器 ===== */
-  #scroll-container {
-    display: flex;
-    width: 600vw;
-    height: 100vh;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+/* 每段 */
+.s{width:100vw;height:100vh;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.5)saturate(.85);transition:filter .8s ease}
+.s.active .bg{filter:brightness(.68)saturate(1)}
+.paper{position:absolute;inset:0;pointer-events:none;z-index:1;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
+.grad-t{position:absolute;top:0;left:0;right:0;height:20%;background:linear-gradient(to bottom,rgba(26,20,16,.7),transparent);z-index:2;pointer-events:none}
+.grad-b{position:absolute;bottom:0;left:0;right:0;height:45%;background:linear-gradient(to top,rgba(26,20,16,.96),rgba(26,20,16,.3),transparent);z-index:2;pointer-events:none}
 
-  /* ===== 每个段落 ===== */
-  .section {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+/* 内容 */
+.c{position:relative;z-index:10;text-align:center;padding:0 7vw;max-width:680px;max-height:100vh;overflow-y:auto}
+.c::-webkit-scrollbar{width:3px}
+.c::-webkit-scrollbar-thumb{background:rgba(200,168,96,.3)}
+.num{font-size:clamp(10px,1.4vw,12px);color:rgba(200,168,96,.4);letter-spacing:.5em;margin-bottom:12px;opacity:.6}
+.title{font-family:'Ma Shan Zheng',cursive;font-size:clamp(24px,5.5vw,48px);color:#e8d8a0;text-shadow:0 2px 18px rgba(200,168,96,.25);letter-spacing:.12em;line-height:1.4;margin-bottom:18px}
+.text{font-size:clamp(14px,2.1vw,18px);color:rgba(230,220,190,.82);line-height:2.5;letter-spacing:.06em;font-weight:300;opacity:0;transform:translateY(10px);transition:opacity .8s .25s,transform .8s .25s}
+.s.active .text{opacity:1;transform:translateY(0)}
+.text .d{display:inline-block;width:1px;height:1em;background:rgba(200,168,96,.2);vertical-align:middle;margin:0 6px}
+.seal{display:inline-block;margin-top:18px;width:40px;height:40px;border:2px solid rgba(180,60,40,.65);border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:15px;color:rgba(180,60,40,.75);transform:rotate(-4deg);opacity:0;transition:opacity .5s 1s}
+.s.active .seal{opacity:1}
 
-  .bg {
-    position: absolute; inset: 0;
-    background-size: cover;
-    background-position: center;
-    filter: brightness(0.55) saturate(0.85);
-    transition: filter 0.8s ease;
-  }
-  .section.active .bg {
-    filter: brightness(0.7) saturate(1);
-  }
+/* 剑光 */
+.sword-light{position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(200,220,255,.025) 50%,transparent 65%);pointer-events:none;z-index:3}
+.sword-flash{position:absolute;left:-20%;right:-20%;height:1px;background:linear-gradient(to right,transparent,rgba(200,220,255,.12),transparent);animation:swordMove 5s ease-in-out infinite;z-index:3;pointer-events:none}
+@keyframes swordMove{0%{top:18%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:78%;opacity:0}}
 
-  /* 宣纸纹理叠加 */
-  .paper-overlay {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse at 20% 30%, rgba(180,150,100,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 70%, rgba(160,120,80,0.08) 0%, transparent 50%),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1;
-  }
+/* 导航 */
+#nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100;background:rgba(26,20,16,.65);padding:7px 14px;border-radius:20px;backdrop-filter:blur(8px)}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(200,168,96,.22);cursor:pointer;border:none;transition:all .3s ease}
+.dot:hover{background:rgba(200,168,96,.5)}
+.dot.active{background:#c8a860;box-shadow:0 0 7px rgba(200,168,96,.55);transform:scale(1.35)}
 
-  /* 底部渐变 */
-  .gradient-bottom {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    height: 40%;
-    background: linear-gradient(to top, rgba(26,20,16,0.92) 0%, rgba(26,20,16,0.4) 60%, transparent 100%);
-    z-index: 2;
-    pointer-events: none;
-  }
-  .gradient-top {
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 25%;
-    background: linear-gradient(to bottom, rgba(26,20,16,0.7) 0%, transparent 100%);
-    z-index: 2;
-    pointer-events: none;
-  }
+#bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,#8a6020,#c8a860);width:0;transition:width .4s ease;z-index:200;box-shadow:0 0 8px rgba(200,168,96,.4)}
 
-  /* ===== 内容区 ===== */
-  .content {
-    position: relative; z-index: 10;
-    text-align: center;
-    padding: 0 8vw;
-    max-width: 700px;
-  }
+#hint{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(200,168,96,.35);letter-spacing:.3em;z-index:100;animation:hintPulse 2.5s ease-in-out infinite;pointer-events:none;transition:opacity .5s}
+#hint.hidden{opacity:0}
+@keyframes hintPulse{0%,100%{opacity:.35;transform:translateX(-50%) translateX(-3px)}50%{opacity:.7;transform:translateX(-50%) translateX(3px)}}
 
-  .section-num {
-    font-family: 'Noto Serif SC', serif;
-    font-size: clamp(10px, 1.5vw, 13px);
-    color: rgba(200,168,96,0.5);
-    letter-spacing: 0.5em;
-    margin-bottom: 16px;
-    opacity: 0.6;
-  }
-
-  .poem-title {
-    font-family: 'Ma Shan Zheng', cursive;
-    font-size: clamp(28px, 6vw, 52px);
-    color: #e8d8a0;
-    text-shadow: 0 2px 20px rgba(200,168,96,0.3);
-    letter-spacing: 0.12em;
-    line-height: 1.4;
-    margin-bottom: 24px;
-  }
-
-  .poem-text {
-    font-family: 'Noto Serif SC', serif;
-    font-size: clamp(14px, 2.2vw, 19px);
-    color: rgba(230,220,190,0.85);
-    line-height: 2.4;
-    letter-spacing: 0.08em;
-    font-weight: 300;
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
-  }
-  .section.active .poem-text {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .poem-text .highlight {
-    color: #e8c870;
-    font-weight: 400;
-  }
-
-  .separator {
-    display: inline-block;
-    width: 2px; height: 1.2em;
-    background: rgba(200,168,96,0.3);
-    margin: 0 6px;
-    vertical-align: middle;
-  }
-
-  /* 朱砂印章 */
-  .seal {
-    display: inline-block;
-    margin-top: 28px;
-    width: 44px; height: 44px;
-    border: 2px solid rgba(180,60,40,0.7);
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Ma Shan Zheng', cursive;
-    font-size: 16px;
-    color: rgba(180,60,40,0.8);
-    letter-spacing: 0;
-    transform: rotate(-5deg);
-    opacity: 0;
-    transition: opacity 0.5s ease 1s;
-  }
-  .section.active .seal { opacity: 1; }
-
-  /* ===== 导航 ===== */
-  #nav {
-    position: fixed;
-    bottom: 28px;
-    left: 50%; transform: translateX(-50%);
-    display: flex; gap: 10px;
-    z-index: 100;
-    background: rgba(26,20,16,0.6);
-    padding: 8px 16px;
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-  }
-  .nav-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(200,168,96,0.25);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-  }
-  .nav-dot:hover { background: rgba(200,168,96,0.5); }
-  .nav-dot.active {
-    background: #c8a860;
-    box-shadow: 0 0 8px rgba(200,168,96,0.6);
-    transform: scale(1.3);
-  }
-
-  /* 进度提示 */
-  #progress-bar {
-    position: fixed; top: 0; left: 0; height: 2px;
-    background: linear-gradient(to right, #8a6020, #c8a860);
-    width: 0%;
-    transition: width 0.3s ease;
-    z-index: 200;
-    box-shadow: 0 0 8px rgba(200,168,96,0.5);
-  }
-
-  /* 滑动提示 */
-  #hint {
-    position: fixed;
-    bottom: 70px; left: 50%; transform: translateX(-50%);
-    font-family: 'Noto Serif SC', serif;
-    font-size: 12px;
-    color: rgba(200,168,96,0.4);
-    letter-spacing: 0.3em;
-    z-index: 100;
-    animation: hintPulse 2.5s ease-in-out infinite;
-    pointer-events: none;
-    transition: opacity 0.5s ease;
-  }
-  #hint.hidden { opacity: 0; }
-  @keyframes hintPulse {
-    0%, 100% { opacity: 0.4; transform: translateX(-50%) translateX(-4px); }
-    50% { opacity: 0.8; transform: translateX(-50%) translateX(4px); }
-  }
-
-  /* 剑光特效（第6段） */
-  .sword-light {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(105deg, transparent 30%, rgba(200,220,255,0.03) 50%, transparent 70%);
-    pointer-events: none;
-    z-index: 3;
-  }
-  .sword-flash {
-    position: absolute;
-    top: 20%; left: -20%; right: -20%;
-    height: 1px;
-    background: linear-gradient(to right, transparent, rgba(200,220,255,0.15), transparent);
-    animation: swordMove 4s ease-in-out infinite;
-    z-index: 3;
-    pointer-events: none;
-  }
-  @keyframes swordMove {
-    0% { top: 20%; opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { top: 75%; opacity: 0; }
-  }
-
-  /* 诗句高亮词 */
-  .section.active .poem-text .key-line {
-    display: block;
-    font-size: 1.15em;
-    color: #e8d080;
-    margin-top: 8px;
-  }
-
-  /* 响应式 */
-  @media (max-width: 600px) {
-    .content { padding: 0 6vw; }
-    #nav { bottom: 20px; }
-  }
+@media(max-width:600px){.c{padding:0 6vw}#nav{bottom:18px}}
 </style>
 </head>
 <body>
 
-<div id="progress-bar"></div>
+<div id="bar"></div>
 
-<!-- 开卷封面 -->
 <div id="curtain">
-  <div>
-    <div id="curtain-title">天上白玉京</div>
-    <div id="curtain-sub">李白 · 经乱离后天恩流夜郎忆旧游书怀赠江夏韦太守良宰</div>
-  </div>
+  <div id="curtain-title">经乱离后天恩流夜郎<br>忆旧游书怀赠江夏韦太守良宰</div>
+  <div id="curtain-sub">李白</div>
+  <div id="curtain-poem">天上白玉京，十二楼五城</div>
 </div>
 
-<!-- 主容器 -->
-<div id="scroll-container">
+<div id="scroll">
 
-  <!-- 壹 · 白玉京 -->
-  <section class="section" data-idx="0">
-    <div class="bg" style="background-image: url('bg1.jpg')"></div>
-    <div class="paper-overlay"></div>
-    <div class="gradient-top"></div>
-    <div class="gradient-bottom"></div>
-    <div class="content">
-      <div class="section-num">壹</div>
-      <div class="poem-title">天上白玉京</div>
-      <div class="poem-text">
-        <span class="highlight">天上白玉京，十二楼五城。</span><br>
-        仙人抚我顶，<span class="separator"></span>结发受长生。<br>
-        误逐世间乐，<span class="separator"></span>颇穷理乱情。<br>
-        <span class="key-line">十六君远行，瞿塘滟滪堆。</span>
+  <!-- 壹 -->
+  <section class="s" data-idx="0">
+    <div class="bg" style="background-image:url('bg1.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">壹</div>
+      <div class="title">天上白玉京</div>
+      <div class="text">
+        天上白玉京，十二楼五城。<div class="d"></div>仙人抚我顶，结发受长生。<div class="d"></div>
+        误逐世间乐，颇穷理乱情。<div class="d"></div>十六君远行，瞿塘滟滪堆。<div class="d"></div>
+        五月不可触，猿声天上哀。<div class="d"></div>门前迟行迹，一一生绿苔。
       </div>
       <div class="seal">白</div>
     </div>
   </section>
 
-  <!-- 贰 · 翰林 -->
-  <section class="section" data-idx="1">
-    <div class="bg" style="background-image: url('bg2.jpg')"></div>
-    <div class="paper-overlay"></div>
-    <div class="gradient-top"></div>
-    <div class="gradient-bottom"></div>
-    <div class="content">
-      <div class="section-num">贰</div>
-      <div class="poem-title">入仕翰林</div>
-      <div class="poem-text">
-        尔后逢运会，<span class="separator"></span>龙颜拱明光。<br>
-        手持芙蓉篇，<span class="separator"></span>三十侍君王。<br>
-        斗鸡金宫里，<span class="separator"></span>蹴踘瑶池边。<br>
-        <span class="key-line">青门种瓜者，旧日东陵侯。</span>
+  <!-- 贰 -->
+  <section class="s" data-idx="1">
+    <div class="bg" style="background-image:url('bg2.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">贰</div>
+      <div class="title">入仕翰林</div>
+      <div class="text">
+        尔后逢运会，龙颜拱明光。<div class="d"></div>手持芙蓉篇，三十侍君王。<div class="d"></div>
+        斗鸡金宫里，蹴踘瑶池边。<div class="d"></div>吹箫饮酒乐，赊写上青天。<div class="d"></div>
+        何知鸾凤志，不与俗争先。<div class="d"></div>宁知风雨夜，促膝复绸缪。
       </div>
       <div class="seal">翰</div>
     </div>
   </section>
 
-  <!-- 叁 · 安史 -->
-  <section class="section" data-idx="2">
-    <div class="bg" style="background-image: url('bg3.jpg')"></div>
-    <div class="paper-overlay"></div>
-    <div class="gradient-top"></div>
-    <div class="gradient-bottom"></div>
-    <div class="content">
-      <div class="section-num">叁</div>
-      <div class="poem-title">安史乱离</div>
-      <div class="poem-text">
-        洛阳三月，<span class="separator"></span>胡沙乱飞扬。<br>
-        函谷如玉碎，<span class="separator"></span>连山杂烽烟。<br>
-        <span class="key-line">白骨成丘山，孤于一剑亡。</span><br>
-        万事皆如此，<span class="separator"></span>吾行亦何伤。
+  <!-- 叁 -->
+  <section class="s" data-idx="2">
+    <div class="bg" style="background-image:url('bg2.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">叁</div>
+      <div class="title">权臣倾轧</div>
+      <div class="text">
+        鸡栖凤皇食，骐骥盐车弃。<div class="d"></div>青云当自致，何必求知音。<div class="d"></div>
+        淮南鸡犬吠，碧梧凤凰栖。<div class="d"></div>但愿君恩顾妾深，岂惜黄金买词赋。<div class="d"></div>
+        白圭竟何在，终无一能贤。<div class="d"></div>浮云蔽高堂，流水空潆洄。
+      </div>
+      <div class="seal">谗</div>
+    </div>
+  </section>
+
+  <!-- 肆 -->
+  <section class="s" data-idx="3">
+    <div class="bg" style="background-image:url('bg3.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">肆</div>
+      <div class="title">安史乱离</div>
+      <div class="text">
+        洛阳三月，胡沙乱飞扬。<div class="d"></div>函谷如玉碎，连山杂烽烟。<div class="d"></div>
+        白骨成丘山，孤于一剑亡。<div class="d"></div>大军载粮草，万室空板筑。<div class="d"></div>
+        我窜求夜郎，逐客自伤悲。<div class="d"></div>万事皆如此，吾行亦何伤。
       </div>
       <div class="seal">乱</div>
     </div>
   </section>
 
-  <!-- 肆 · 夜郎 -->
-  <section class="section" data-idx="3">
-    <div class="bg" style="background-image: url('bg4.jpg')"></div>
-    <div class="paper-overlay"></div>
-    <div class="gradient-top"></div>
-    <div class="gradient-bottom"></div>
-    <div class="content">
-      <div class="section-num">肆</div>
-      <div class="poem-title">流放夜郎</div>
-      <div class="poem-text">
-        <span class="key-line">夜郎万里道，沧溟一片流。</span><br>
-        魂梦何时到，<span class="separator"></span>故乡不可求。<br>
-        长流夜郎客，<span class="separator"></span>独酌长江舟。<br>
-        众鸟各有托，<span class="separator"></span>吾亦爱吾庐。
+  <!-- 伍 -->
+  <section class="s" data-idx="4">
+    <div class="bg" style="background-image:url('bg4.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">伍</div>
+      <div class="title">流放夜郎</div>
+      <div class="text">
+        夜郎万里道，沧溟一片流。<div class="d"></div>黄鹤东俱下，一鸟凌高秋。<div class="d"></div>
+        魂梦何时到，穷山阻且修。<div class="d"></div>长流夜郎客，独酌长江舟。<div class="d"></div>
+        众鸟各有托，吾亦爱吾庐。<div class="d"></div>故乡不可见，搔首空悠悠。
       </div>
       <div class="seal">郎</div>
     </div>
   </section>
 
-  <!-- 伍 · 重逢 -->
-  <section class="section" data-idx="4">
-    <div class="bg" style="background-image: url('bg5.jpg')"></div>
-    <div class="paper-overlay"></div>
-    <div class="gradient-top"></div>
-    <div class="gradient-bottom"></div>
-    <div class="content">
-      <div class="section-num">伍</div>
-      <div class="poem-title">江夏重逢</div>
-      <div class="poem-text">
-        借问叹者谁，<span class="separator"></span>言是之子修。<br>
-        故人不相见，<span class="separator"></span>况经十载愁。<br>
-        <span class="key-line">宁知风雨夜，促膝复绸缪。</span><br>
-        一杯相与醉，<span class="separator"></span>可以解千忧。
+  <!-- 陆 -->
+  <section class="s" data-idx="5">
+    <div class="bg" style="background-image:url('bg4.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">陆</div>
+      <div class="title">三峡险滩</div>
+      <div class="text">
+        三峡巫峡长，瞿塘艳滪堆。<div class="d"></div>两岸猿声啼不住，轻舟已过万重山。<div class="d"></div>
+        朝辞白帝彩云间，千里江陵一日还。<div class="d"></div>水流如激箭，滩峻不容舟。<div class="d"></div>
+        水流回望连天黑，唯见长江日夜流。<div class="d"></div>何如此峡水，万折故南流。
+      </div>
+      <div class="seal">峡</div>
+    </div>
+  </section>
+
+  <!-- 柒 -->
+  <section class="s" data-idx="6">
+    <div class="bg" style="background-image:url('bg5.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">柒</div>
+      <div class="title">遇赦东归</div>
+      <div class="text">
+        夜郎天外怨流离，一贬犹为万里行。<div class="d"></div>得罪风霜苦，全生羽翼轻。<div class="d"></div>
+        尚未及青天，低头觑尔曹。<div class="d"></div>却起江湖兴，波涛日夜生。<div class="d"></div>
+        归及强健时，送客渡江陵。<div class="d"></div>春风来几日，白发忽满簪。
+      </div>
+      <div class="seal">赦</div>
+    </div>
+  </section>
+
+  <!-- 捌 -->
+  <section class="s" data-idx="7">
+    <div class="bg" style="background-image:url('bg7.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">捌</div>
+      <div class="title">江夏重逢</div>
+      <div class="text">
+        借问叹者谁，言是之子修。<div class="d"></div>故人不相见，况经十载愁。<div class="d"></div>
+        宁知风雨夜，促膝复绸缪。<div class="d"></div>一杯相与醉，可以解千忧。<div class="d"></div>
+        依然故人情，执手重夷犹。<div class="d"></div>留欢卜夜永，明月照高楼。
       </div>
       <div class="seal">逢</div>
     </div>
   </section>
 
-  <!-- 陆 · 剑 -->
-  <section class="section" data-idx="5">
-    <div class="bg" style="background-image: url('bg6.jpg')"></div>
-    <div class="paper-overlay"></div>
-    <div class="gradient-top"></div>
-    <div class="gradient-bottom"></div>
-    <div class="sword-light"></div>
-    <div class="sword-flash"></div>
-    <div class="content">
-      <div class="section-num">陆</div>
-      <div class="poem-title">剑非万人敌</div>
-      <div class="poem-text">
-        <span class="key-line">剑非万人敌，</span><br>
-        <span class="key-line">文窃四海声。</span><br>
-        <span class="key-line">离家百年乐，</span><br>
-        <span class="key-line">此言虽不平。</span>
+  <!-- 玖 -->
+  <section class="s" data-idx="8">
+    <div class="bg" style="background-image:url('bg6.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="sword-light"></div><div class="sword-flash"></div>
+    <div class="c">
+      <div class="num">玖</div>
+      <div class="title">剑非万人敌</div>
+      <div class="text">
+        剑非万人敌，文窃四海声。<div class="d"></div>离家百年乐，此言虽不平。<div class="d"></div>
+        书此赠今日，青云路分明。<div class="d"></div>壮心竟不就，白发忽满簪。<div class="d"></div>
+        松柏虽孤处，蒲荷亦自荣。<div class="d"></div>古来英雄士，咸同一呜呃。
       </div>
+      <div class="seal">剑</div>
+    </div>
+  </section>
+
+  <!-- 拾 -->
+  <section class="s" data-idx="9">
+    <div class="bg" style="background-image:url('bg1.jpg')"></div>
+    <div class="paper"></div><div class="grad-t"></div><div class="grad-b"></div>
+    <div class="c">
+      <div class="num">拾</div>
+      <div class="title">仙人抚我顶</div>
+      <div class="text">
+        天上白玉京，十二楼五城。<div class="d"></div>仙人抚我顶，结发受长生。<div class="d"></div>
+        误逐世间乐，颇穷理乱情。<div class="d"></div>九十六圣君，浮云挂空名。<div class="d"></div>
+        长揖四十年，此行天府惊。<div class="d"></div>愿一明白水，携手相与倾。
+     优</div>
       <div class="seal">白</div>
     </div>
   </section>
 
 </div>
 
-<!-- 导航 -->
 <div id="nav">
-  <button class="nav-dot active" data-idx="0"></button>
-  <button class="nav-dot" data-idx="1"></button>
-  <button class="nav-dot" data-idx="2"></button>
-  <button class="nav-dot" data-idx="3"></button>
-  <button class="nav-dot" data-idx="4"></button>
-  <button class="nav-dot" data-idx="5"></button>
+  <button class="dot active" data-idx="0"></button>
+  <button class="dot" data-idx="1"></button>
+  <button class="dot" data-idx="2"></button>
+  <button class="dot" data-idx="3"></button>
+  <button class="dot" data-idx="4"></button>
+  <button class="dot" data-idx="5"></button>
+  <button class="dot" data-idx="6"></button>
+  <button class="dot" data-idx="7"></button>
+  <button class="dot" data-idx="8"></button>
+  <button class="dot" data-idx="9"></button>
 </div>
 
 <div id="hint">← 左右滑动 →</div>
 
 <script>
-(function() {
-  const TOTAL = 6;
-  let current = 0;
-  let isScrolling = false;
-  let touchStartX = 0;
-  let touchStartY = 0;
+(function(){
+  var TOTAL=10;
+  var cur=0,lock=0;
+  var sc=document.getElementById('scroll');
+  var ss=document.querySelectorAll('.s');
+  var ds=document.querySelectorAll('.dot');
+  var bar=document.getElementById('bar');
+  var curtain=document.getElementById('curtain');
+  var hint=document.getElementById('hint');
+  ss[0].classList.add('active');
 
-  const container = document.getElementById('scroll-container');
-  const sections = document.querySelectorAll('.section');
-  const dots = document.querySelectorAll('.nav-dot');
-  const progressBar = document.getElementById('progress-bar');
-  const curtain = document.getElementById('curtain');
-  const hint = document.getElementById('hint');
-
-  // 初始化第一个为 active
-  sections[0].classList.add('active');
-
-  function goTo(idx) {
-    if (idx < 0 || idx >= TOTAL || isScrolling) return;
-    isScrolling = true;
-    current = idx;
-    container.style.transform = `translateX(-${idx * 100}vw)`;
-    sections.forEach((s, i) => s.classList.toggle('active', i === idx));
-    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    progressBar.style.width = `${((idx + 1) / TOTAL * 100)}%`;
-    setTimeout(() => { isScrolling = false; }, 850);
+  function go(i){
+    if(i<0||i>=TOTAL||lock)return;
+    lock=1;cur=i;
+    sc.style.transform='translateX(-'+i*100+'vw)';
+    for(var j=0;j<ss.length;j++){ss[j].classList.toggle('active',j===i);}
+    for(var k=0;k<ds.length;k++){ds[k].classList.toggle('active',k===i);}
+    bar.style.width=((i+1)/TOTAL*100)+'%';
+    setTimeout(function(){lock=0;},920);
   }
 
-  // 鼠标滚轮
-  let wheelTimeout;
-  window.addEventListener('wheel', (e) => {
+  var wt;
+  window.addEventListener('wheel',function(e){
     e.preventDefault();
-    clearTimeout(wheelTimeout);
-    wheelTimeout = setTimeout(() => {
-      goTo(e.deltaY > 0 ? current + 1 : current - 1);
-    }, 100);
-  }, { passive: false });
+    clearTimeout(wt);
+    wt=setTimeout(function(){go(e.deltaY>0?cur+1:cur-1);},120);
+  },{passive:false});
 
-  // 触摸 — 禁用滑动，只接受轻点快速切换
-  let touchLocked = false;
-  document.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  document.addEventListener('touchend', (e) => {
-    if (touchLocked) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    // 水平滑动超过60px才算，且方向要明确
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      touchLocked = true;
-      goTo(dx < 0 ? current + 1 : current - 1);
-      setTimeout(() => { touchLocked = false; }, 900);
+  var sx=0,sy=0,locked=0;
+  document.addEventListener('touchstart',function(e){
+    sx=e.touches[0].clientX;
+    sy=e.touches[0].clientY;
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(locked)return;
+    var dx=e.changedTouches[0].clientX-sx;
+    var dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5){
+      locked=1;
+      go(dx<0?cur+1:cur-1);
+      var _t=setTimeout(function(){locked=0;},950);
     }
-  }, { passive: true });
+  },{passive:true});
 
-  // 导航点击
-  dots.forEach(d => {
-    d.addEventListener('click', () => goTo(+d.dataset.idx));
+  for(var m=0;m<ds.length;m++){
+    ds[m].addEventListener('click',function(){
+      go(parseInt(this.getAttribute('data-idx')));
+    });
+  }
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')go(cur+1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
   });
 
-  // 键盘
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
-  });
-
-  // 开卷
-  setTimeout(() => {
+  setTimeout(function(){
     curtain.classList.add('fade');
-    setTimeout(() => {
-      curtain.style.display = 'none';
+    setTimeout(function(){
+      curtain.style.display='none';
       hint.classList.remove('hidden');
-      setTimeout(() => hint.classList.add('hidden'), 4000);
-    }, 1200);
-  }, 2800);
-
-  // 进度条
-  window.addEventListener('scroll', () => {}, { passive: true });
+      var _h=setTimeout(function(){hint.classList.add('hidden');},4500);
+    },1500);
+  },3000);
 })();
 </script>
 </body>
