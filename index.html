@@ -118,10 +118,41 @@ body{background:#1a1410;font-family:'Noto Serif SC',serif;color:#3a2a1a}
 .dot:hover{background:rgba(200,168,96,.45)}
 .dot.active{background:#c8a860;box-shadow:0 0 6px rgba(200,168,96,.5);transform:scale(1.4)}
 
+/* 音乐按钮 */
+#music-btn{
+  position:fixed;top:18px;right:18px;z-index:300;
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(30,22,14,.75);border:1px solid rgba(200,168,96,.25);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);opacity:0;transition:opacity .5s,transform .2s;
+  outline:none;
+}
+#music-btn.show{opacity:1}
+#music-btn:hover{transform:scale(1.1);border-color:rgba(200,168,96,.5)}
+#music-btn svg{transition:opacity .3s}
+
 @media(max-width:600px){.chapter-inner{padding:10vh 6vw 12vh}}
 </style>
 </head>
 <body>
+
+<!-- 音乐按钮 -->
+<button id="music-btn" aria-label="音乐开关" title="背景音乐">
+  <!-- 播放图标 -->
+  <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="rgba(200,168,96,.7)">
+    <path d="M3 22v-20l18 10-18 10z"/>
+  </svg>
+  <!-- 暂停图标 -->
+  <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="rgba(200,168,96,.7)" style="display:none">
+    <path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z"/>
+  </svg>
+</button>
+
+<!-- 背景音乐 -->
+<audio id="bgm" loop preload="none">
+  <!-- 古琴《广陵散》- Internet Archive 公共域录制 -->
+  <source src="https://dn711307.ca.archive.org/0/items/GuanglingSong/GuanglingSong_64kb.mp3" type="audio/mpeg">
+</audio>
 
 <!-- 封面 -->
 <div id="cover" onclick="startScroll()">
@@ -362,7 +393,33 @@ body{background:#1a1410;font-family:'Noto Serif SC',serif;color:#3a2a1a}
 </nav>
 
 <script>
-// 封面点击 → 进入主内容
+// ─── 背景音乐 ────────────────────────────────────────────────────────────────
+var bgm     = document.getElementById('bgm');
+var musicBtn= document.getElementById('music-btn');
+var iconPlay = document.getElementById('icon-play');
+var iconPause= document.getElementById('icon-pause');
+var isPlaying = false;
+
+// 默认静音（符合浏览器自动播放策略）
+bgm.volume = 0.45;
+
+musicBtn.addEventListener('click',function(e){
+  e.stopPropagation();
+  if(isPlaying){
+    bgm.pause();
+    iconPlay.style.display = '';
+    iconPause.style.display = 'none';
+    musicBtn.title = '播放背景音乐';
+  } else {
+    bgm.play().catch(function(){});
+    iconPlay.style.display = 'none';
+    iconPause.style.display = '';
+    musicBtn.title = '关闭背景音乐';
+  }
+  isPlaying = !isPlaying;
+});
+
+// ─── 封面点击 → 进入主内容 ───────────────────────────────────────────────────
 function startScroll(){
   var cover=document.getElementById('cover');
   cover.style.opacity='0';
@@ -370,18 +427,20 @@ function startScroll(){
     cover.style.display='none';
     document.getElementById('main').classList.add('show');
     document.getElementById('nav').classList.add('show');
+    // 封面消失后显示音乐按钮
+    musicBtn.classList.add('show');
+    // 预加载所有背景图
+    var bgs=document.querySelectorAll('.chapter-bg');
+    bgs.forEach(function(div){
+      var src=div.parentElement.getAttribute('data-bg');
+      div.style.backgroundImage="url('"+src+"')";
+    });
+    // 触发第一章的动画
+    setTimeout(function(){checkVisible();},200);
   },800);
-  // 预加载所有背景图
-  var bgs=document.querySelectorAll('.chapter-bg');
-  bgs.forEach(function(div,i){
-    var src=div.parentElement.getAttribute('data-bg');
-    div.style.backgroundImage="url('"+src+"')";
-  });
-  // 触发第一章的动画
-  setTimeout(function(){checkVisible();},200);
 }
 
-// IntersectionObserver：检测每个章节
+// ─── IntersectionObserver ────────────────────────────────────────────────────
 var dots=document.querySelectorAll('.dot');
 var chapters=document.querySelectorAll('.chapter');
 
@@ -390,22 +449,14 @@ function checkVisible(){
     var rect=ch.getBoundingClientRect();
     var inView=rect.top<window.innerHeight*.6&&rect.bottom>0;
     if(inView){
-      // 触发诗句逐句显现
       var lines=ch.querySelectorAll('.chapter-line');
       lines.forEach(function(line,li){
-        setTimeout(function(){
-          line.classList.add('show');
-        },li*120);
+        setTimeout(function(){line.classList.add('show');},li*120);
       });
       var seal=ch.querySelector('.chapter-seal');
       if(seal)seal.classList.add('show');
-      // 更新导航
       dots.forEach(function(d){d.classList.remove('active');});
       dots[i].classList.add('active');
-    } else {
-      // 离开时重置（可选）
-      // var lines=ch.querySelectorAll('.chapter-line');
-      // lines.forEach(function(l){l.classList.remove('show');});
     }
   });
 }
@@ -417,7 +468,6 @@ var observer=new IntersectionObserver(function(entries){
       var idx=parseInt(ch.getAttribute('data-idx'));
       dots.forEach(function(d){d.classList.remove('active');});
       dots[idx].classList.add('active');
-      // 逐句出现
       var lines=ch.querySelectorAll('.chapter-line');
       lines.forEach(function(line,li){
         setTimeout(function(){line.classList.add('show');},li*130);
