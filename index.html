@@ -36,8 +36,30 @@ body{background:#1a1410;font-family:'Noto Serif SC',serif;color:#3a2a1a}
 }
 @keyframes hintPulse{0%,100%{opacity:.3}50%{opacity:.6}}
 
+/* 向上滑动指引 */
+#swipe-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(200,168,96,.4);font-size:10px;letter-spacing:.4em;
+  animation:swipeHint 2s ease-in-out infinite;
+}
+#swipe-hint .hand{
+  width:22px;height:34px;border:1.5px solid rgba(200,168,96,.3);
+  border-radius:12px;position:relative;
+}
+#swipe-hint .hand::after{
+  content:'';position:absolute;
+  top:5px;left:50%;transform:translateX(-50%);
+  width:4px;height:10px;border-radius:2px;
+  background:rgba(200,168,96,.4);
+  animation:swipeFinger 2s ease-in-out infinite;
+}
+@keyframes swipeHint{0%,100%{opacity:.25;transform:translateX(-50%) translateY(0)}50%{opacity:.6;transform:translateX(-50%) translateY(-6px)}}
+@keyframes swipeFinger{0%,100%{top:5px;opacity:1}50%{top:14px;opacity:.5}}
+
 /* 页面主体 */
-#main{display:none}
+#main{display:block;opacity:1;pointer-events:none}
+#main.pointer{pointer-events:auto}
 #main.show{display:block}
 
 /* 每段 */
@@ -155,14 +177,18 @@ body{background:#1a1410;font-family:'Noto Serif SC',serif;color:#3a2a1a}
 </audio>
 
 <!-- 封面 -->
-<div id="cover" onclick="startScroll()">
+<div id="cover">
   <div id="cover-title">经乱离后天恩流夜郎<br>忆旧游书怀赠江夏韦太守良宰</div>
   <div id="cover-sub">李白</div>
+  <div id="swipe-hint">
+    <div class="hand"></div>
+    向上滑动
+  </div>
   <div id="cover-hint">↑ 向上滚动阅读 ↓</div>
 </div>
 
 <!-- 主内容 -->
-<div id="main">
+<div id="main" class="visible">
 
   <!-- 壹 -->
   <section class="chapter" data-idx="0" data-bg="bg1.jpg">
@@ -400,7 +426,6 @@ var iconPlay = document.getElementById('icon-play');
 var iconPause= document.getElementById('icon-pause');
 var isPlaying = false;
 
-// 默认静音（符合浏览器自动播放策略）
 bgm.volume = 0.45;
 
 musicBtn.addEventListener('click',function(e){
@@ -419,70 +444,94 @@ musicBtn.addEventListener('click',function(e){
   isPlaying = !isPlaying;
 });
 
-// ─── 封面点击 → 进入主内容 ───────────────────────────────────────────────────
-function startScroll(){
-  var cover=document.getElementById('cover');
-  cover.style.opacity='0';
+// 封面音乐按钮初始显示
+musicBtn.classList.add('show');
+
+// ─── 封面 → 主内容切换 ───────────────────────────────────────────────────────
+var cover      = document.getElementById('cover');
+var mainEl     = document.getElementById('main');
+var navEl      = document.getElementById('nav');
+var entered    = false;
+
+function enterMain(){
+  if(entered) return;
+  entered = true;
+  cover.style.opacity = '0';
   setTimeout(function(){
-    cover.style.display='none';
-    document.getElementById('main').classList.add('show');
-    document.getElementById('nav').classList.add('show');
-    // 封面消失后显示音乐按钮
-    musicBtn.classList.add('show');
-    // 预加载所有背景图
-    var bgs=document.querySelectorAll('.chapter-bg');
-    bgs.forEach(function(div){
-      var src=div.parentElement.getAttribute('data-bg');
-      div.style.backgroundImage="url('"+src+"')";
-    });
-    // 触发第一章的动画
-    setTimeout(function(){checkVisible();},200);
-  },800);
+    cover.style.display = 'none';
+    mainEl.classList.add('pointer');
+    navEl.classList.add('show');
+  }, 600);
+  // 预加载所有背景图
+  var bgs = document.querySelectorAll('.chapter-bg');
+  bgs.forEach(function(div){
+    var src = div.parentElement.getAttribute('data-bg');
+    div.style.backgroundImage = "url('"+src+"')";
+  });
+  setTimeout(function(){ checkVisible(); }, 300);
 }
 
-// ─── IntersectionObserver ────────────────────────────────────────────────────
-var dots=document.querySelectorAll('.dot');
-var chapters=document.querySelectorAll('.chapter');
+// 点击封面向下滑动（进入主内容）
+cover.addEventListener('click', enterMain);
+
+// 向上滑动封面向下滚动（进入主内容）
+var touchStartY = 0;
+cover.addEventListener('touchstart', function(e){
+  touchStartY = e.touches[0].clientY;
+}, {passive:true});
+cover.addEventListener('touchend', function(e){
+  var delta = touchStartY - e.changedTouches[0].clientY;
+  if(delta > 50) enterMain(); // 向上滑 > 50px
+}, {passive:true});
+
+// 鼠标滚轮向上滚动（进入主内容）
+window.addEventListener('wheel', function(e){
+  if(!entered && e.deltaY < 0) enterMain();
+}, {passive:true});
+
+// ─── IntersectionObserver ──────────────────────────────────────────────────────
+var dots     = document.querySelectorAll('.dot');
+var chapters = document.querySelectorAll('.chapter');
 
 function checkVisible(){
   chapters.forEach(function(ch,i){
-    var rect=ch.getBoundingClientRect();
-    var inView=rect.top<window.innerHeight*.6&&rect.bottom>0;
+    var rect  = ch.getBoundingClientRect();
+    var inView= rect.top < window.innerHeight * .6 && rect.bottom > 0;
     if(inView){
-      var lines=ch.querySelectorAll('.chapter-line');
+      var lines = ch.querySelectorAll('.chapter-line');
       lines.forEach(function(line,li){
-        setTimeout(function(){line.classList.add('show');},li*120);
+        setTimeout(function(){ line.classList.add('show'); }, li * 120);
       });
-      var seal=ch.querySelector('.chapter-seal');
-      if(seal)seal.classList.add('show');
-      dots.forEach(function(d){d.classList.remove('active');});
+      var seal = ch.querySelector('.chapter-seal');
+      if(seal) seal.classList.add('show');
+      dots.forEach(function(d){ d.classList.remove('active'); });
       dots[i].classList.add('active');
     }
   });
 }
 
-var observer=new IntersectionObserver(function(entries){
+var observer = new IntersectionObserver(function(entries){
   entries.forEach(function(e){
     if(e.isIntersecting){
-      var ch=e.target;
-      var idx=parseInt(ch.getAttribute('data-idx'));
-      dots.forEach(function(d){d.classList.remove('active');});
+      var ch  = e.target;
+      var idx = parseInt(ch.getAttribute('data-idx'));
+      dots.forEach(function(d){ d.classList.remove('active'); });
       dots[idx].classList.add('active');
-      var lines=ch.querySelectorAll('.chapter-line');
+      var lines = ch.querySelectorAll('.chapter-line');
       lines.forEach(function(line,li){
-        setTimeout(function(){line.classList.add('show');},li*130);
+        setTimeout(function(){ line.classList.add('show'); }, li * 130);
       });
-      var seal=ch.querySelector('.chapter-seal');
-      if(seal)setTimeout(function(){seal.classList.add('show');},lines.length*130+200);
+      var seal = ch.querySelector('.chapter-seal');
+      if(seal) setTimeout(function(){ seal.classList.add('show'); }, lines.length * 130 + 200);
     }
   });
-},{threshold:0.3,rootMargin:'0px 0px -10% 0px'});
+},{threshold:0.3, rootMargin:'0px 0px -10% 0px'});
 
-chapters.forEach(function(ch){observer.observe(ch);});
+chapters.forEach(function(ch){ observer.observe(ch); });
 
 // 导航点击 → 平滑滚动到章节
 dots.forEach(function(d,i){
-  d.addEventListener('click',function(){
+  d.addEventListener('click', function(){
     chapters[i].scrollIntoView({behavior:'smooth'});
   });
 });
